@@ -1,12 +1,18 @@
 // File with the test scripts for the html file
 
 document.addEventListener('DOMContentLoaded', function() {
+  var modal = document.getElementById('myModal');
+
     document.getElementById('inputForm').addEventListener('submit', function(event) {
         event.preventDefault();
-
-        var dropDownValue = document.getElementById('dropdownButton').textContent
-
+        
         var input = document.getElementById('numberInput').value;
+        var dropDownValue = document.getElementById('dropdownButton').textContent;
+        var closeButtton = document.querySelector('.close');
+
+        modal.style.display = "flex";   
+        document.getElementById('inputForm').reset()
+        
         document.getElementById('displayNumberInput').textContent = "You want to pay " + input + " euros for " + dropDownValue + ". Is this right?";
 
         // Clear previous button if any
@@ -15,10 +21,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Adding the confirmation buttons
         var yesButton = document.createElement('button');
+
+        closeButtton.onclick = function() {modal.style.display = 'none'}
+        
         yesButton.setAttribute('type', 'button'); //prevents form submission when using the button
         yesButton.textContent = 'YES';
         yesButton.onclick = function() {
             document.getElementById('displayNumberInput').textContent = '';
+            modal.style.display = "none";
             document.getElementById('confirmationNumberInput').textContent = dropDownValue + ': paid ' + input + ' euros.';
             buttonArea.innerHTML = '';
 
@@ -43,6 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
         noButton.textContent = 'NO';
         noButton.onclick = function() {
             document.getElementById('displayNumberInput').textContent = '';
+            modal.style.display = "none";
             document.getElementById('confirmationNumberInput').textContent = 'Cancelled transaction.';
             buttonArea.innerHTML = '';
         }
