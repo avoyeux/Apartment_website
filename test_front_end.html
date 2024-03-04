@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="Farid and Alfred's apartment spendings">
+        <meta name="author" content="Alfred Voyeux">
+
+        <title>Apartment Expenditures</title>
+        <link rel="stylesheet" href="test_styles.css">
+        <script src="script_test.js" defer></script>
+    </head> 
+
+    <body>
+        <h1>Apartment expenditures</h1>
+
+        <div class="container">
+            <div class="left-panel">
+                <h2>New expenditures</h2>
+
+                <form id="inputForm">
+                    <label for="numberInput">Paying for: </label>
+
+                    <div class="dropdown">
+                        <button id="dropdownButton" onclick="toggleDropdown()">Click me</button>
+                        <div id="myDropdown" class="dropdown-content">
+                          <a href="#" onclick="chooseItem('Rent')">Rent</a>
+                          <a href="#" onclick="chooseItem('Internet')">Internet</a>
+                          <a href="#" onclick="chooseItem('Electricity')">Electricity</a>
+                          <a href="#" onclick="chooseItem('Other')">Other</a>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="requiredDropDownValue" name="requiredDropDown" required>
+                    <input type="number" id="numberInput" step="any" name="numberInput" required>
+                    <input type="submit" value="Submit">
+                </form>
+
+                <div id="displayNumberInput"></div>
+                <div id="buttonAreaNumberInput"></div>
+                <div id="confirmationNumberInput"></div>
+            </div>
+
+            <div class="right-box" id="logBoxTransactions">
+                <h2>Past transactions</h2>
+
+                <div id="logNumberInput"></div>
+            </div>
+        </div>
+    </body>
+</html>
