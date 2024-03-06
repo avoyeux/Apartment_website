@@ -23,11 +23,12 @@
                     <label for="numberInput">Paying for: </label>
 
                     <div class="dropdown">
-                        <button id="dropdownButton" onclick="toggleDropdown()">Click me</button>
+                        <button type="button" id="dropdownButton" onclick="toggleDropdown()">Select an option</button>
                         <div id="myDropdown" class="dropdown-content">
                           <a href="#" onclick="chooseItem('Rent')">Rent</a>
                           <a href="#" onclick="chooseItem('Internet')">Internet</a>
                           <a href="#" onclick="chooseItem('Electricity')">Electricity</a>
+                          <a href="#" onclick="chooseItem('Utilities')">Utilities</a>
                           <a href="#" onclick="chooseItem('Other')">Other</a>
                         </div>
                     </div>
@@ -43,9 +44,7 @@
                         <div id="displayNumberInput"></div>
                         <div id="buttonAreaNumberInput"></div>
                     </div>
-                </div>
-
-                <div id="confirmationNumberInput"></div>
+                </div>                
             </div>
 
             <div class="right-box" id="logBoxTransactions">

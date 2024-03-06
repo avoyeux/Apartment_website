@@ -1,68 +1,78 @@
 // File with the test scripts for the html file
+class firstSubmitFollow {
+  constructor() {
+    this.modal = document.getElementById('myModal');
+    this.dropDownValue = document.getElementById('dropdownButton').textContent;
+    this.isValidDropDown = this.dropDownValue !== "Select an option";
+    this.number = document.getElementById('numberInput').value; 
+    this.yesNoButtonArea = document.getElementById('buttonAreaNumberInput');
+    this.yesButton = document.createElement('button');
+    this.noButton = document.createElement('button');
+    this.closeButton = document.querySelector('.close');
+    this.okButton = document.createElement('button');
+    this.displayQuestion = document.getElementById('displayNumberInput');
+    this.logArea = document.getElementById('logNumberInput');
+    this.logEntry = document.createElement('div');
+  }
+
+  structure() {
+    this.displayQuestion.textContent = '';
+
+    if (this.isValidDropDown) {
+      this.modal.style.display = 'flex';
+      document.getElementById('inputForm').reset();
+
+      this.yesNoButtonArea.innerHTML = '';
+      this.yesButton.setAttribute('type', 'button');
+      this.noButton.setAttribute('type', 'button');
+      this.yesButton.textContent = 'YES';
+      this.noButton.textContent = 'NO';
+      this.displayQuestion.textContent =  "You want to pay " + this.number + " euros for " + this.dropDownValue + ". Is this right?";
+
+      this.closeButton.onclick = () => {this.modal.style.display = 'none'};
+      this.yesButton.onclick = () => {this.yesNoFunctions(true, this.dropDownValue + ': paid ' + this.number + ' euros.');};
+      this.noButton.onclick = () => {this.yesNoFunctions(false, 'Cancelled transaction.');};
+
+      this.yesNoButtonArea.appendChild(this.yesButton);
+      this.yesNoButtonArea.appendChild(this.noButton);
+    } else {
+      alert("Please select an option for the Dropdown.");
+    }
+  }
+
+  yesNoFunctions(yesBool, message) {
+    this.yesNoButtonArea.innerHTML = '';
+    this.displayQuestion.textContent = message;
+
+    if (yesBool) {
+      var currentTime = new Date().toLocaleTimeString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour12: false,
+        minute: '2-digit',
+        second: '2-digit'
+      });
+      this.logEntry.textContent = this.dropDownValue + ": " + this.number + " euros added. (" + currentTime + ").";
+      this.logArea.prepend(this.logEntry);
+    }
+
+    this.okButton.setAttribute('type', 'button');
+    this.okButton.textContent = 'OK';
+    this.okButton.onclick = () => {this.modal.style.display = 'none'};
+    this.yesNoButtonArea.appendChild(this.okButton);
+  }
+}
 
 document.addEventListener('DOMContentLoaded', function() {
-  var modal = document.getElementById('myModal');
+  document.getElementById('inputForm').addEventListener('submit', function(event) {
+    event.preventDefault();
 
-    document.getElementById('inputForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-        
-        var input = document.getElementById('numberInput').value;
-        var dropDownValue = document.getElementById('dropdownButton').textContent;
-        var closeButtton = document.querySelector('.close');
-
-        modal.style.display = "flex";   
-        document.getElementById('inputForm').reset()
-        
-        document.getElementById('displayNumberInput').textContent = "You want to pay " + input + " euros for " + dropDownValue + ". Is this right?";
-
-        // Clear previous button if any
-        var buttonArea = document.getElementById('buttonAreaNumberInput');
-        buttonArea.innerHTML = '';
-
-        // Adding the confirmation buttons
-        var yesButton = document.createElement('button');
-
-        closeButtton.onclick = function() {modal.style.display = 'none'}
-        
-        yesButton.setAttribute('type', 'button'); //prevents form submission when using the button
-        yesButton.textContent = 'YES';
-        yesButton.onclick = function() {
-            document.getElementById('displayNumberInput').textContent = '';
-            modal.style.display = "none";
-            document.getElementById('confirmationNumberInput').textContent = dropDownValue + ': paid ' + input + ' euros.';
-            buttonArea.innerHTML = '';
-
-            var currentTime = new Date().toLocaleTimeString('en-GB', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: false 
-            });
-
-            var logArea = document.getElementById('logNumberInput');
-            var logEntry = document.createElement('div')
-            logEntry.textContent = dropDownValue + ": " + input + " euros added. (" + currentTime + ").";
-            logArea.prepend(logEntry);
-        }
-
-        var noButton = document.createElement('button');
-        noButton.setAttribute('type', 'button');
-        noButton.textContent = 'NO';
-        noButton.onclick = function() {
-            document.getElementById('displayNumberInput').textContent = '';
-            modal.style.display = "none";
-            document.getElementById('confirmationNumberInput').textContent = 'Cancelled transaction.';
-            buttonArea.innerHTML = '';
-        }
-
-        // Append the confirmation buttons to the HTML
-        buttonArea.appendChild(yesButton);
-        buttonArea.appendChild(noButton);
-    });
+    var submitInstance = new firstSubmitFollow();
+    submitInstance.structure();
+  });
 });
+
 
 // Function to show/hide the dropdown
 function toggleDropdown() {
