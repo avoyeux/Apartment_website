@@ -12,7 +12,7 @@ class firstSubmitFollow {
     this.okButton = document.createElement('button');
     this.displayQuestion = document.getElementById('displayNumberInput');
     this.logArea = document.getElementById('logNumberInput');
-    this.logEntry = document.createElement('div');
+    this.logEntry = document.createElement('p');
   }
 
   structure() {
@@ -45,15 +45,17 @@ class firstSubmitFollow {
     this.displayQuestion.textContent = message;
 
     if (yesBool) {
-      var currentTime = new Date().toLocaleTimeString('en-GB', {
+      let currentTime = new Date().toLocaleTimeString('en-GB', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
-        hour12: false,
+        hour: '2-digit',
         minute: '2-digit',
-        second: '2-digit'
+        second: '2-digit',
+        hour12: false
       });
       this.logEntry.textContent = this.dropDownValue + ": " + this.number + " euros added. (" + currentTime + ").";
+      this.postingLogInfo()
       this.logArea.prepend(this.logEntry);
     }
 
@@ -62,17 +64,52 @@ class firstSubmitFollow {
     this.okButton.onclick = () => {this.modal.style.display = 'none'};
     this.yesNoButtonArea.appendChild(this.okButton);
   }
+
+  postingLogInfo() {
+    const data = { logString: this.logEntry.textContent };
+    fetch('http://localhost:5000/save-log', {
+      method: 'POST', 
+      headers: {
+      'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Success:', data);
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+    });
+  }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  fetchingLogInfo()
   document.getElementById('inputForm').addEventListener('submit', function(event) {
     event.preventDefault();
 
-    var submitInstance = new firstSubmitFollow();
+    let submitInstance = new firstSubmitFollow();
     submitInstance.structure();
   });
 });
 
+
+
+// To fetch the past transactions data from the csv
+function fetchingLogInfo() {
+  fetch('http://localhost:5000/get-logs')
+  .then(response => response.json())
+  .then(data => {
+    const logsContainer = document.getElementById('logNumberInput');
+    data.forEach(log => {
+      const logElement = document.createElement('p');
+      logElement.textContent = log['0'];
+      logsContainer.prepend(logElement);
+    });
+  })
+  .catch(error => console.error('Error:', error));
+}
 
 // Function to show/hide the dropdown
 function toggleDropdown() {
@@ -90,9 +127,9 @@ function chooseItem(value) {
 // Close the dropdown if the user clicks outside of it
 window.onclick = function(event) {
   if (!event.target.matches('.dropdown button')) {
-    var dropdowns = document.getElementsByClassName("dropdown-content");
-    for (var i = 0; i < dropdowns.length; i++) {
-      var openDropdown = dropdowns[i];
+    let dropdowns = document.getElementsByClassName("dropdown-content");
+    for (let i = 0; i < dropdowns.length; i++) {
+      let openDropdown = dropdowns[i];
       if (openDropdown.classList.contains('show')) {
         openDropdown.classList.remove('show');
       }

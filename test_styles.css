@@ -3,6 +3,7 @@
 
 /* headers and body stuff */
 h1 {text-align: center;}  /* center aligns the main title */
+h2 {text-align: center;}
 
 body {background-color: rgb(139, 198, 218);}
 
