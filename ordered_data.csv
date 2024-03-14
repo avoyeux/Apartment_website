@@ -1,17 +1,8 @@
-Username,Choice,Value,Date,Time
-Alfred,Gas,55,12/03/2024,00:54:01
-Alfred,Rent,-30,12/03/2024,00:54:14
-Alfred,Utilities,503,12/03/2024,00:54:27
-Alfred,Electricity,12,12/03/2024,00:54:37
-Alfred,Other,54,12/03/2024,00:54:49
-Alfred,Cat,88,12/03/2024,00:55:00
-Alfred,Food,86,12/03/2024,00:55:09
-Alfred,Insurance,-8,12/03/2024,00:55:24
-Alfred,Internet,88,12/03/2024,00:55:32
-Farid,Rent,665,12/03/2024,00:56:09
-Farid,Internet,-5,12/03/2024,00:56:18
-Farid,Cat,445,12/03/2024,00:56:27
-Farid,Food,87,12/03/2024,00:56:40
-Farid,Insurance,88,12/03/2024,00:56:53
-Farid,Other,-5,12/03/2024,00:57:10
-Farid,Electricity,88,12/03/2024,00:57:18
+Username,Choice,Value,Date,Time,Comment
+Alfred,Internet,556,12/03/2024,20:13:09,none
+Alfred,Electricity,65,12/03/2024,20:13:33,none
+Alfred,Gas,-5,12/03/2024,20:14:37,none
+Alfred,Gas,88,12/03/2024,20:15:09,none
+Alfred,Rent,88,12/03/2024,20:15:38,none
+Alfred,Food,88,12/03/2024,20:22:51,none
+Alfred,Utilities,25,12/03/2024,20:25:45,"again, testing"

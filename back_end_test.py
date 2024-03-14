@@ -90,8 +90,12 @@ def save_log():
     # # Saving data for log creation
     data = request.json
     newlog = data['logString']
-    raw_data = {'Username': session['username'],
-                'Log': newlog}
+    newcomment = data['logComment']
+    raw_data = {
+        'Username': session['username'],
+        'Log': newlog,
+        'Comment': newcomment,
+        }
     raw_exists = os.path.exists('raw_data.csv')
     df_new = pd.DataFrame([raw_data])
     df_new.to_csv('raw_data.csv', mode='a', header=not raw_exists, index=False)
@@ -99,11 +103,14 @@ def save_log():
     # Saving data for statistics
     matching_pattern = log_pattern.match(newlog)
     if matching_pattern:
-        new_values = {'Username': session['username'],
-                      'Choice': matching_pattern.group('choice'),
-                      'Value': matching_pattern.group('value'),
-                      'Date': matching_pattern.group('date'),
-                      'Time': matching_pattern.group('time')}
+        new_values = {
+            'Username': session['username'],
+            'Choice': matching_pattern.group('choice'),
+            'Value': matching_pattern.group('value'),
+            'Date': matching_pattern.group('date'),
+            'Time': matching_pattern.group('time'),
+            'Comment': newcomment,
+            }
         df_new_row = pd.DataFrame([new_values])
 
         file_exists = os.path.exists('ordered_data.csv')
@@ -132,8 +139,6 @@ def get_logs():
         'Session_username': session_username,
         'Usernames': usernames,
         'Logs': logs}
-    
-    print(f'Session Username is {session_username}')
     return jsonify(response_data)
 
 @app.route('/get-summary', methods=['GET'])
@@ -141,9 +146,15 @@ def get_summary():
     """
     To get the summary of the transactions on the main page.
     """
-
-    instance = Statistics(session['username'])
-    data = instance.Data_giver()
+    
+    if os.path.exists('ordered_data.csv'):
+        instance = Statistics(session['username'])
+        data = instance.Data_giver()
+    else:
+        data = {
+            'headerOrder': None,
+            'data': None,
+            }
     return jsonify(data)
 
 class Statistics:
@@ -220,16 +231,18 @@ class Statistics:
         utilities_given, utilities_taken = self.Total_choice('Utilities')
         other_given, other_taken = self.Total_choice('Other')
         
-        values_dict = {'Rent': [rent_given, rent_taken, rent_given - rent_taken],
-                       'Internet': [internet_given, internet_taken, internet_given - internet_taken],
-                       'Electricity': [electricity_given, electricity_taken, electricity_given - electricity_taken],
-                       'Gas': [gas_given, gas_taken, gas_given - gas_taken],
-                       'Insurance': [insurance_given, insurance_taken, insurance_given - insurance_taken],
-                       'Food': [food_given, food_taken, food_given - food_taken],
-                       'Cat': [cat_given, cat_taken, cat_given - cat_taken],
-                       'Utilities': [utilities_given, utilities_taken, utilities_given - utilities_taken],
-                       'Other': [other_given, other_taken, other_given - other_taken],
-                       'TOTAL': [total_given, total_taken, total_given - total_taken]}
+        values_dict = {
+            'Rent': [rent_given, rent_taken, rent_given - rent_taken],
+            'Internet': [internet_given, internet_taken, internet_given - internet_taken],
+            'Electricity': [electricity_given, electricity_taken, electricity_given - electricity_taken],
+            'Gas': [gas_given, gas_taken, gas_given - gas_taken],
+            'Insurance': [insurance_given, insurance_taken, insurance_given - insurance_taken],
+            'Food': [food_given, food_taken, food_given - food_taken],
+            'Cat': [cat_given, cat_taken, cat_given - cat_taken],
+            'Utilities': [utilities_given, utilities_taken, utilities_given - utilities_taken],
+            'Other': [other_given, other_taken, other_given - other_taken],
+            'TOTAL': [total_given, total_taken, total_given - total_taken],
+            }
         
         header_order = list(values_dict.keys())
         return {'headerOrder': header_order, 'data': values_dict}
