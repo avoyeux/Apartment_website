@@ -10,14 +10,15 @@ from flask_session import Session
 
 # Initialisation of a flask application
 app = Flask(__name__)
-app.secret_key = 'my_secret_key'  # TODO: I need to change it as it is the key to access data changes over the server
-config_settings = {'DEBUG': True,
-                   'SECRET_KEY': 'alkifwuhe589efwef6d',
-                   'SESSION_TYPE': 'filesystem',
-                   'SESSION_PERMANENT': False,
-                   'SESSION_COOKIE_SAMESITE': 'Lax',
-                   'SESSION_COOKIE_SECURE': False,
-                   'SESSION_COOKIE_HTTPONLY': False} #only here as I am using http for the testing
+config_settings = {
+    'DEBUG': True,
+    'SECRET_KEY': 'alkifwuhe589efwef6dfsdfegrwd5484fe69w',
+    'SESSION_TYPE': 'filesystem',
+    'SESSION_PERMANENT': False,
+    'SESSION_COOKIE_SAMESITE': 'Lax',
+    'SESSION_COOKIE_SECURE': False,
+    'SESSION_COOKIE_HTTPONLY': False, #only here as I am using http for the testing
+    } 
 app.config.update(config_settings)
 Session(app)
 CORS(app, supports_credentials=True, origins=["http://localhost:5000", "http://127.0.0.1:5000"])
@@ -48,7 +49,7 @@ def login():
     """
 
     data = request.json
-    username = data.get('username')
+    username = data.get('username').strip(" ")
     password = data.get('password')
 
     if username in user_credentials and user_credentials[username] == password:
@@ -84,13 +85,15 @@ def save_log():
     log_pattern = re.compile(r'''^(?P<choice>.*?):\s
                              (?P<value>-?\d+)\s
                              euros\sadded\.\s
-                             \((?P<date>\d{2}/\d{2}/\d{4}),
+                             \((?P<day>\d{2})
+                             /(?P<month>\d{2})
+                             /(?P<year>\d{4}),
                              \s(?P<time>\d{2}:\d{2}:\d{2})\)\.''',re.VERBOSE)
 
     # # Saving data for log creation
     data = request.json
     newlog = data['logString']
-    newcomment = data['logComment']
+    newcomment = 'none' if not data['logComment'] else data['logComment'] 
     raw_data = {
         'Username': session['username'],
         'Log': newlog,
@@ -107,7 +110,9 @@ def save_log():
             'Username': session['username'],
             'Choice': matching_pattern.group('choice'),
             'Value': matching_pattern.group('value'),
-            'Date': matching_pattern.group('date'),
+            'Year': matching_pattern.group('year'),
+            'Month': matching_pattern.group('month'),
+            'Day': matching_pattern.group('day'),
             'Time': matching_pattern.group('time'),
             'Comment': newcomment,
             }
@@ -122,7 +127,7 @@ def save_log():
 @app.route('/get-logs', methods=['GET'])
 def get_logs():
     """
-    Function to get the log values to display in the past transactions html box.
+    To get the log values to display in the past transactions html box.
     """
 
     session_username = session.get('username')
@@ -131,14 +136,44 @@ def get_logs():
 
         usernames = df['Username'].tolist()
         logs = df['Log'].tolist()
+        comments = df['Comment'].tolist()
     else:
         usernames = session_username
         logs = ['No transactions yet.']
+        comments = ['No comments yet.']
     
     response_data = {
         'Session_username': session_username,
         'Usernames': usernames,
-        'Logs': logs}
+        'Logs': logs,
+        'Comments': comments,
+        }
+    return jsonify(response_data)
+
+@app.route('/get-comments', methods=['GET'])
+def get_comments():
+    """
+    To only get the logs and comments for the logs that actually have a comment.
+    """
+
+    session_username = session.get('username')
+    if os.path.exists('raw_data.csv'):
+        df = pd.read_csv('raw_data.csv')
+        filters = (df['Comment'] != 'none')
+        usernames = df[filters]['Username'].tolist()
+        logs = df[filters]['Log'].tolist()
+        comments = df[filters]['Comment'].tolist()
+    else:
+        usernames = session_username
+        logs = ['No transactions yet.']
+        comments = ['No comments yet.']
+    
+    response_data = {
+        'Session_username': session_username,
+        'Usernames': usernames,
+        'Logs': logs,
+        'Comments': comments,
+    }
     return jsonify(response_data)
 
 @app.route('/get-summary', methods=['GET'])
@@ -148,7 +183,7 @@ def get_summary():
     """
     
     if os.path.exists('ordered_data.csv'):
-        instance = Statistics(session['username'])
+        instance = Statistics(session.get('username'))
         data = instance.Data_giver()
     else:
         data = {
@@ -162,11 +197,13 @@ class Statistics:
     To set all the statistics done.
     """
 
-    def __init__(self, username: str):
+    def __init__(self, username: str, stats: bool = False):
         self.data = pd.read_csv('ordered_data.csv')
 
         # Attributes
         self.Important_attributes(username)
+
+        # Function choices
 
     def Important_attributes(self, username):
         """
@@ -176,6 +213,9 @@ class Statistics:
         self.usernames = ['Alfred', 'Farid']
         self.username = username
 
+        self.month_name_list = [
+            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+            ]
 
     def Total_expenditures(self):
         """
@@ -246,6 +286,24 @@ class Statistics:
         
         header_order = list(values_dict.keys())
         return {'headerOrder': header_order, 'data': values_dict}
+    
+    def Monthly_choice(self, choice: str):
+        """
+        To get the monthly total expenditure for a given choice.
+        """
+
+        username_filter = (self.data['Username'] == self.username)
+        choice_filter = (self.data['Choice'] == choice)
+        month_filters = [(self.data['month'] == month) for month in range(1, 13)]
+
+        new_data = self.data[choice_filter]
+        new_dates = new_data['Date'] 
+
+        for date in new_dates:
+            pass
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
