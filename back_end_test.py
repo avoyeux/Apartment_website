@@ -184,13 +184,30 @@ def get_summary():
     
     if os.path.exists('ordered_data.csv'):
         instance = Statistics(session.get('username'))
-        data = instance.Data_giver_new()
+        data = instance.Summary_giver()
     else:
         data = {
             'headerOrder': None,
             'data': None,
             }
     return jsonify(data)
+
+@app.route('/get-monthly-data', methods=['GET'])
+def get_monthly_data():
+    """
+    To get the monthly integration data for both users and the corresponding sum.
+    """
+
+    session_username = session.get('username')
+    if os.path.exists('ordered_data.csv'):
+        instance = Statistics(session_username)
+        data = instance.Monthly_integration()
+    else:
+        data = jsonify({'none': 0})
+    return jsonify({
+        'sessionUsername': session_username,
+        'data': data,
+        })
 
 
 class Statistics:
@@ -202,50 +219,24 @@ class Statistics:
         self.data = pd.read_csv('ordered_data.csv')
 
         # Attributes
-        self.Important_attributes(username)
+        self.username = username
+        self.Important_attributes()
 
-        # Function choices
+        # Functions
 
-    def Important_attributes(self, username):
+    def Important_attributes(self):
         """
         Function to store the important instance attributes.
         """
-        
-        self.usernames = ['Alfred', 'Farid']
-        self.username = username
+    
         for not_username in ['Alfred', 'Farid']:
             if self.username != not_username:
                 self.not_username = not_username
                 break
-
-
-        self.month_name_list = [
-            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-            ]
-
-    def Total_expenditures(self):
-        """
-        For the total money given and how much is needed.
-        """
-
-        other_username = [s for s in self.usernames if s!=self.username][0]
-
-        username_euros = self.data[self.data['Username'] == self.username]['Value']
-        other_username_euros = self.data[self.data['Username'] == other_username]['Value']
-
-        if username_euros.any():
-            total_given = username_euros.sum()
-        else:
-            total_given = 0
-        if other_username_euros.any():
-            total_taken = other_username_euros.sum()
-        else:
-            total_taken = 0
-        return int(total_given), int(total_taken)
     
-    def Total_choice_new(self):
+    def Summary_integrations(self):
         """
-        To get the total sum of money given by both parties for a certain option.
+
         """
 
         user_choice_sum = self.data.groupby(['Username', 'Choice'])['Value'].sum().reset_index()
@@ -256,82 +247,37 @@ class Statistics:
         total_sum['Choice'] = 'TOTAL'
         self.data_choice = pd.concat([data_choice, total_sum], ignore_index=True)
     
-    def Total_choice(self, choice: str):
-        """
-        To get the total sum of money given by both parties for a certain option.
+    def Summary_giver(self):
         """
 
-        other_username = [s for s in self.usernames if s != self.username][0]
-        username_choice = self.data[(self.data['Username'] == self.username) & (self.data['Choice'] == choice)]['Value']
-        other_username_choice = self.data[(self.data['Username'] == other_username) & (self.data['Choice'] == choice)]['Value']
-        if username_choice.any():
-            username_given = username_choice.sum()
-        else:
-            username_given = 0
-        if other_username_choice.any():
-            other_username_given = other_username_choice.sum()
-        else:
-            other_username_given = 0
-        return int(username_given), int(other_username_given)
-    
-    def Data_giver(self):
         """
-        To get all the main values that will automatically be displayed on the /home page.
-        """
-
-        total_given, total_taken = self.Total_expenditures()
-        rent_given, rent_taken = self.Total_choice('Rent')
-        internet_given, internet_taken = self.Total_choice('Internet')
-        electricity_given, electricity_taken = self.Total_choice('Electricity')
-        gas_given, gas_taken = self.Total_choice('Gas')
-        insurance_given, insurance_taken = self.Total_choice('Insurance')
-        food_given, food_taken = self.Total_choice('Food')
-        cat_given, cat_taken = self.Total_choice('Cat')
-        utilities_given, utilities_taken = self.Total_choice('Utilities')
-        other_given, other_taken = self.Total_choice('Other')
-        
-        values_dict = {
-            'Rent': [rent_given, rent_taken, rent_given - rent_taken],
-            'Internet': [internet_given, internet_taken, internet_given - internet_taken],
-            'Electricity': [electricity_given, electricity_taken, electricity_given - electricity_taken],
-            'Gas': [gas_given, gas_taken, gas_given - gas_taken],
-            'Insurance': [insurance_given, insurance_taken, insurance_given - insurance_taken],
-            'Food': [food_given, food_taken, food_given - food_taken],
-            'Cat': [cat_given, cat_taken, cat_given - cat_taken],
-            'Utilities': [utilities_given, utilities_taken, utilities_given - utilities_taken],
-            'Other': [other_given, other_taken, other_given - other_taken],
-            'TOTAL': [total_given, total_taken, total_given - total_taken],
-            }
-        
-        header_order = list(values_dict.keys())
-        return {'headerOrder': header_order, 'data': values_dict}
-    
-    def Data_giver_new(self):
-        """
-        To get all the main values that will automatically be displayed on the /home page.
-        """
-        self.Total_choice_new()
+        self.Summary_integrations()
 
         username_order = [self.username, self.not_username, 'Total']
+        initial_header_order = [
+            'Rent', 'Internet', 'Electricity', 'Gas', 'Insurance', 'Food', 'Cat','Utilities', 'Other', 'TOTAL',
+            ]
+        
         pivot_df = self.data_choice.pivot(index='Choice', columns='Username', values='Value')
         pivot_df = pivot_df.reindex(columns=username_order)
-        pivot_df.fillna(0, inplace=True) # swapping nans to zeros
+        pivot_df.fillna(0, inplace=True)
         result_dict = pivot_df.apply(lambda row: row.tolist(), axis=1).to_dict()
-        header_order = list(result_dict.keys())
-        print(f"the header order is {header_order}")
-        print(f"the values for the rent are {result_dict['Rent']}")
+        header_order = [header for header in initial_header_order if header in result_dict.keys()]
         return {'headerOrder': header_order, 'data': result_dict}
     
     def Monthly_integration(self):
         """
-        To get the monthly total expenditure for a given choice.
+
         """
 
-        monthly_sum = self.data.groupby(['Choice', 'Month'])['Value'].sum().reset_index()
-        user_monthly_sum = self.data.groupby(['Choice', 'Month', 'Username'])['Value'].sum().reset_index()
-
+        monthly_sum = self.data.groupby(['Choice', 'Month'])['Value'].sum().reset_index()  #TODO: would need to add the year in the mix
+        user_monthly_sum = self.data.groupby(['Username', 'Choice', 'Month'])['Value'].sum().reset_index()
         monthly_sum['Username'] = 'Total'
-        return pd.concat([user_monthly_sum, monthly_sum], ignore_index=True)
+        df = pd.concat([user_monthly_sum, monthly_sum], ignore_index=True)
+
+        df = df.pivot_table(index=['Username', 'Choice'], columns='Month', values='Value', fill_value=0)
+        return df.groupby(['Username']).apply(lambda x: x.xs(x.name).to_dict(orient='index')).to_json()
+
 
 
 
